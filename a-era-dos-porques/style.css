@@ -1,3 +1,10 @@
+/* ============================================================
+   CSS MINIMALISTA DE TESTE (identidade Matrix: preto + verde).
+   O acabamento visual refinado e as imagens dos personagens
+   serão feitos em uma etapa futura. Aqui só o necessário para
+   a lógica e a interação funcionarem.
+   ============================================================ */
+
 * { box-sizing: border-box; }
 
 body {
@@ -11,11 +18,17 @@ body {
 main { max-width: 720px; margin: 0 auto; padding: 16px; }
 h1, h2 { font-size: 1.2rem; margin: 0 0 12px; }
 
+/* Transição suave entre perguntas */
+#jogo { transition: opacity .25s; }
+#jogo.saindo { opacity: 0; }
+
+/* Placar */
 #placar { border: 1px solid #00ff41; padding: 12px; margin-bottom: 16px; }
 .medidor-wrap { margin-top: 8px; }
 .medidor { border: 1px solid #00ff41; height: 16px; margin-top: 4px; }
-#medidor-barra { height: 100%; width: 50%; background: #00ff41; transition: width .3s; }
+#medidor-barra { height: 100%; width: 50%; background: #00ff41; transition: width .4s; }
 
+/* Placeholder do personagem (arte futura) */
 .placeholder {
   border: 1px dashed #008f11;
   color: #008f11;
@@ -24,7 +37,42 @@ h1, h2 { font-size: 1.2rem; margin: 0 0 12px; }
   margin-bottom: 16px;
 }
 
-#pergunta { font-size: 1.15rem; margin: 0 0 16px; }
+/* Caixa de diálogo */
+#dialogo {
+  border: 1px solid #00ff41;
+  padding: 12px;
+  margin-bottom: 16px;
+  min-height: 110px;
+  cursor: pointer;
+}
+.falante { color: #008f11; font-weight: bold; }
+.fala { margin: 4px 0 0; font-size: 1.15rem; min-height: 1.5em; white-space: pre-wrap; }
+.dica { color: #008f11; font-size: .8rem; margin-top: 8px; }
+
+/* Cursor piscando durante a digitação */
+.fala.digitando::after {
+  content: "█";
+  animation: piscar 1s steps(1) infinite;
+}
+@keyframes piscar { 50% { opacity: 0; } }
+
+/* Eco da resposta do jogador */
+#eco {
+  border-left: 3px solid #00ff41;
+  padding: 4px 12px;
+  margin-bottom: 16px;
+  white-space: pre-wrap;
+}
+
+/* Feedback */
+#feedback { border: 1px solid #00ff41; padding: 12px; margin-bottom: 16px; }
+#feedback-meta { color: #008f11; margin-bottom: 8px; }
+#feedback-meta .tag { color: #00ff41; font-weight: bold; }
+
+/* Campo de resposta */
+#resposta { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+#resposta[hidden] { display: none; }
+#aviso { color: #008f11; min-height: 1.2em; font-size: .9rem; }
 
 button, textarea {
   background: #000;
@@ -33,19 +81,11 @@ button, textarea {
   font-family: inherit;
   font-size: 1rem;
 }
-
-button { padding: 10px 12px; cursor: pointer; text-align: left; }
+textarea { padding: 8px; width: 100%; resize: vertical; }
+button { padding: 10px 12px; cursor: pointer; text-align: center; }
 button:hover:not(:disabled) { background: #00ff41; color: #000; }
 button:disabled, textarea:disabled { opacity: .4; cursor: not-allowed; }
 
-#opcoes { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
-
-#livre { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
-textarea { padding: 8px; width: 100%; resize: vertical; }
-#btn-enviar, #btn-proxima, #btn-reiniciar { text-align: center; }
-
-#feedback { border: 1px solid #00ff41; padding: 12px; margin-bottom: 12px; }
-#feedback .tag { font-weight: bold; }
-#feedback .delta { color: #008f11; }
+#btn-continuar { width: 100%; }
 
 #fim { border: 1px solid #00ff41; padding: 16px; }
