@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <main>
+  <main id="cena">
     <h1>&gt; A_ERA_DOS_PORQUÊS</h1>
 
     <section id="placar">
@@ -20,19 +20,42 @@
     </section>
 
     <section id="jogo">
-      <div id="imagem" class="placeholder"></div>
-      <p id="pergunta"></p>
+      <!--
+        ============================================================
+        FASE VISUAL FUTURA
+        Este bloco é só um placeholder de texto. Na etapa de arte,
+        o personagem (criança) e os cenários entram aqui, junto com
+        o acabamento visual refinado. A lógica não depende dele.
+        ============================================================
+      -->
+      <div id="personagem" class="placeholder"></div>
 
-      <div id="opcoes"></div>
+      <!-- Caixa de diálogo: a pergunta da criança aparece digitada -->
+      <div id="dialogo" aria-live="polite">
+        <div class="falante">CRIANÇA:</div>
+        <p id="dialogo-texto" class="fala"></p>
+        <div class="dica" id="dica-pular">(toque na caixa para pular a digitação)</div>
+      </div>
 
-      <div id="livre">
-        <label for="texto-livre">&gt; Ou responda com suas palavras:</label>
-        <textarea id="texto-livre" rows="3" placeholder="digite sua resposta..."></textarea>
+      <!-- Eco da resposta do jogador -->
+      <div id="eco" hidden></div>
+
+      <!-- Reação da criança + pontuação -->
+      <div id="feedback" hidden>
+        <div id="feedback-meta"></div>
+        <div class="falante">CRIANÇA:</div>
+        <p id="feedback-texto" class="fala"></p>
+      </div>
+
+      <!-- Resposta livre do jogador -->
+      <div id="resposta">
+        <label for="texto-livre">&gt; Sua resposta:</label>
+        <textarea id="texto-livre" rows="3" placeholder="explique para a criança..."></textarea>
+        <div id="aviso" role="status"></div>
         <button id="btn-enviar" type="button">ENVIAR</button>
       </div>
 
-      <div id="feedback" hidden></div>
-      <button id="btn-proxima" type="button" hidden>PRÓXIMA</button>
+      <button id="btn-continuar" type="button" hidden>CONTINUAR &gt;</button>
     </section>
 
     <section id="fim" hidden>
