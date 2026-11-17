@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>A Era dos Porquês</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <h1>&gt; A_ERA_DOS_PORQUÊS</h1>
+
+    <section id="placar">
+      <div>PONTOS: <span id="pontos">0</span></div>
+      <div id="progresso"></div>
+      <div class="medidor-wrap">
+        <span>CONSCIÊNCIA: <span id="consciencia-valor">50</span>/100</span>
+        <div class="medidor"><div id="medidor-barra"></div></div>
+      </div>
+    </section>
+
+    <section id="jogo">
+      <div id="imagem" class="placeholder"></div>
+      <p id="pergunta"></p>
+
+      <div id="opcoes"></div>
+
+      <div id="livre">
+        <label for="texto-livre">&gt; Ou responda com suas palavras:</label>
+        <textarea id="texto-livre" rows="3" placeholder="digite sua resposta..."></textarea>
+        <button id="btn-enviar" type="button">ENVIAR</button>
+      </div>
+
+      <div id="feedback" hidden></div>
+      <button id="btn-proxima" type="button" hidden>PRÓXIMA</button>
+    </section>
+
+    <section id="fim" hidden>
+      <h2 id="fim-titulo"></h2>
+      <p id="fim-texto"></p>
+      <p id="fim-stats"></p>
+      <button id="btn-reiniciar" type="button">JOGAR NOVAMENTE</button>
+    </section>
+  </main>
+
+  <script src="dados.js"></script>
+  <script src="motor.js"></script>
+  <script src="ui.js"></script>
+</body>
+</html>
