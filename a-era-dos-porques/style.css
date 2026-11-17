@@ -1,0 +1,51 @@
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: #000;
+  color: #00ff41;
+  font-family: "Courier New", monospace;
+  line-height: 1.5;
+}
+
+main { max-width: 720px; margin: 0 auto; padding: 16px; }
+h1, h2 { font-size: 1.2rem; margin: 0 0 12px; }
+
+#placar { border: 1px solid #00ff41; padding: 12px; margin-bottom: 16px; }
+.medidor-wrap { margin-top: 8px; }
+.medidor { border: 1px solid #00ff41; height: 16px; margin-top: 4px; }
+#medidor-barra { height: 100%; width: 50%; background: #00ff41; transition: width .3s; }
+
+.placeholder {
+  border: 1px dashed #008f11;
+  color: #008f11;
+  padding: 24px 12px;
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+#pergunta { font-size: 1.15rem; margin: 0 0 16px; }
+
+button, textarea {
+  background: #000;
+  color: #00ff41;
+  border: 1px solid #00ff41;
+  font-family: inherit;
+  font-size: 1rem;
+}
+
+button { padding: 10px 12px; cursor: pointer; text-align: left; }
+button:hover:not(:disabled) { background: #00ff41; color: #000; }
+button:disabled, textarea:disabled { opacity: .4; cursor: not-allowed; }
+
+#opcoes { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+
+#livre { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+textarea { padding: 8px; width: 100%; resize: vertical; }
+#btn-enviar, #btn-proxima, #btn-reiniciar { text-align: center; }
+
+#feedback { border: 1px solid #00ff41; padding: 12px; margin-bottom: 12px; }
+#feedback .tag { font-weight: bold; }
+#feedback .delta { color: #008f11; }
+
+#fim { border: 1px solid #00ff41; padding: 16px; }
