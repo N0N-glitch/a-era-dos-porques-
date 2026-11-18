@@ -1,34 +1,41 @@
 // ============================================================
-// INTERFACE DE TEXTO (etapa 2)
-// Depende de: dados.js (banco) e motor.js (lógica).
-// FASE VISUAL FUTURA: arte, animações e imagens dos personagens
-// entram depois. Nenhuma regra do jogo deve ser escrita aqui:
-// esta camada só mostra o que o Motor devolve.
+// INTERFACE: telas, digitação, painel de consciência e eventos.
+// Nenhuma regra do jogo mora aqui: tudo vem do Motor.
+// FASE VISUAL FUTURA: a arte dos personagens e as animações
+// refinadas entram depois; o avatar atual é só um placeholder.
 // ============================================================
 (() => {
   const $ = (id) => document.getElementById(id);
 
-  // ---------- Ajustes da interface (mexa só aqui) ----------
+  // ---------- Ajustes da interface ----------
   const UI = {
-    MODO_DIGITACAO: "letra",   // "letra" ou "palavra"
-    MS_POR_LETRA: 28,
-    MS_POR_PALAVRA: 130,
-    MS_PAUSA_PONTUACAO: 220,   // pausa extra após . ! ? , ; :
-    MS_PAUSA_AVANCO: 3500,     // tempo até avançar sozinho após o feedback
-    MS_FADE: 250,              // deve combinar com a transição do #jogo no CSS
+    MODO_DIGITACAO: "palavra",  // "palavra" ou "letra"
+    MS_POR_PALAVRA: 140,
+    MS_POR_LETRA: 30,
+    MS_PAUSA_PONTUACAO: 260,    // pausa extra após . ! ? , ; :
+    AUTO_AVANCO_MS: 6500,       // avanço automático após o feedback (0 desliga)
+    MS_FADE: 250,
     INSTANTANEO: window.matchMedia &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches
   };
 
-  // ---------- Estado da interface ----------
-  // fase: "digitando" | "resposta" | "feedback" | "fim"
+  const TELAS = ["menu", "regras", "setup", "jogo", "fim"];
+
+  // ---------- Estado ----------
+  // fase: "digitando" | "resposta" | "feedback" | "transicao" | "fim"
   let fase = "digitando";
   let jogo = null;
   let resultado = null;
-  let digitacao = null;      // controlador da digitação em andamento
+  let digitacao = null;
   let timerAvanco = null;
+  let config = { idade: 5, dificuldade: "medio" };
 
-  // ---------- Efeito de máquina de escrever ----------
+  function mostrarTela(nome) {
+    TELAS.forEach((t) => { $("tela-" + t).hidden = t !== nome; });
+    window.scrollTo(0, 0);
+  }
+
+  // ---------- Efeito de digitação ----------
   function cancelarDigitacao() {
     if (digitacao) digitacao.cancelar();
   }
@@ -38,10 +45,11 @@
     el.textContent = "";
     el.classList.add("digitando");
 
-    const unidades = UI.MODO_DIGITACAO === "palavra"
+    const porPalavra = UI.MODO_DIGITACAO === "palavra";
+    const unidades = porPalavra
       ? texto.split(/(\s+)/).filter((u) => u !== "")
       : Array.from(texto);
-    const msBase = UI.MODO_DIGITACAO === "palavra" ? UI.MS_POR_PALAVRA : UI.MS_POR_LETRA;
+    const msBase = porPalavra ? UI.MS_POR_PALAVRA : UI.MS_POR_LETRA;
 
     let i = 0;
     let timer = null;
@@ -65,51 +73,110 @@
       if (i >= unidades.length) return concluir();
       const u = unidades[i++];
       el.textContent += u;
-      const pausa = /[.!?,;:]\s*$/.test(u) ? UI.MS_PAUSA_PONTUACAO : 0;
-      timer = setTimeout(passo, msBase + pausa);
+      // Em modo palavra os espaços são unidades próprias: sem espera extra neles
+      const ehEspaco = /^\s+$/.test(u);
+      const pausa = /[.!?,;:]$/.test(u) ? UI.MS_PAUSA_PONTUACAO : 0;
+      timer = setTimeout(passo, ehEspaco ? 0 : msBase + pausa);
     };
 
     digitacao = { pular: concluir, cancelar: encerrar };
-
     if (UI.INSTANTANEO) return concluir();
     passo();
   }
 
-  // ---------- Placar ----------
-  function renderPlacar() {
-    const s = jogo.estado();
-    $("pontos").textContent = s.pontos;
-    $("consciencia-valor").textContent = s.consciencia;
-    $("medidor-barra").style.width = (s.consciencia / s.consciencia_max) * 100 + "%";
-    $("progresso").textContent = `PERGUNTA ${s.numero}/${s.total}`;
+  // ---------- Setup (montado a partir do dados.js) ----------
+  function opcaoRadio(nome, valor, titulo, desc, marcado) {
+    const label = document.createElement("label");
+    label.className = "opcao";
+
+    const input = document.createElement("input");
+    input.type = "radio";
+    input.name = nome;
+    input.value = valor;
+    input.checked = marcado;
+    input.addEventListener("change", () => {
+      config[nome] = nome === "idade" ? Number(valor) : valor;
+    });
+
+    const corpo = document.createElement("span");
+    corpo.className = "opcao-corpo";
+    const t = document.createElement("strong");
+    t.textContent = titulo;
+    corpo.appendChild(t);
+    if (desc) {
+      const d = document.createElement("small");
+      d.textContent = desc;
+      corpo.appendChild(d);
+    }
+
+    label.append(input, corpo);
+    return label;
   }
 
-  // ---------- Controle do campo de resposta ----------
+  function montarSetup() {
+    const idades = $("opcoes-idade");
+    const difs = $("opcoes-dif");
+    idades.innerHTML = "";
+    difs.innerHTML = "";
+
+    IDADES.forEach((i) =>
+      idades.appendChild(opcaoRadio("idade", String(i), `${i} anos`, "", i === config.idade))
+    );
+    Object.entries(DIFICULDADES).forEach(([id, d]) => {
+      const titulo = d.subtitulo ? `${d.rotulo} (${d.subtitulo})` : d.rotulo;
+      difs.appendChild(opcaoRadio("dificuldade", id, titulo, d.descricao, id === config.dificuldade));
+    });
+
+    $("qtd-perguntas").textContent = CONFIG_PARTIDA.PERGUNTAS_POR_RODADA;
+    $("regra-qtd").textContent = CONFIG_PARTIDA.PERGUNTAS_POR_RODADA;
+  }
+
+  // ---------- Painel de consciência ----------
+  function renderConsciencia() {
+    const s = jogo.estado();
+    $("painel-consciencia").className = "painel estado-" + s.corEstado;
+    $("consciencia-valor").textContent = (s.consciencia > 0 ? "+" : "") + s.consciencia;
+    $("consciencia-meta").textContent = s.meta;
+    $("consciencia-rotulo").textContent = ROTULOS_ESTADO[s.corEstado];
+
+    const ref = s.consciencia >= 0 ? s.meta : Math.max(10, s.meta / 2);
+    const pct = Math.min(100, (Math.abs(s.consciencia) / ref) * 100);
+    $("consciencia-barra").style.width = pct + "%";
+
+    $("hud-progresso").textContent = `Pergunta ${s.numero} de ${s.total}`;
+    $("hud-config").textContent = `${s.idade} anos · ${s.dificuldade.rotulo}`;
+  }
+
+  // ---------- Fluxo da partida ----------
+  function iniciarPartida() {
+    clearTimeout(timerAvanco);
+    cancelarDigitacao();
+    jogo = Motor.criarPartida({ idade: config.idade, dificuldade: config.dificuldade });
+    $("tela-jogo").classList.remove("saindo");
+    mostrarTela("jogo");
+    mostrarPergunta();
+  }
+
   function travarResposta(sim) {
     $("texto-livre").disabled = sim;
     $("btn-enviar").disabled = sim;
   }
 
-  function aviso(msg) {
-    $("aviso").textContent = msg || "";
-  }
-
-  // ---------- Fluxo: mostrar pergunta ----------
   function mostrarPergunta() {
     const p = jogo.perguntaAtual();
     resultado = null;
     fase = "digitando";
 
-    $("personagem").textContent = `[ IMAGEM: ${p.imagem} ]`;
     $("eco").hidden = true;
     $("feedback").hidden = true;
+    $("feedback-dica").hidden = true;
     $("btn-continuar").hidden = true;
     $("resposta").hidden = false;
     $("dica-pular").hidden = false;
     $("texto-livre").value = "";
-    aviso("");
+    $("aviso").textContent = "";
     travarResposta(true);
-    renderPlacar();
+    renderConsciencia();
 
     digitar($("dialogo-texto"), p.texto, () => {
       fase = "resposta";
@@ -119,52 +186,52 @@
     });
   }
 
-  // ---------- Fluxo: enviar resposta ----------
   function enviar() {
     if (fase !== "resposta") return;
 
     const txt = $("texto-livre").value.trim();
     if (!txt) {
-      aviso("Escreva uma resposta antes de enviar.");
+      $("aviso").textContent = "Escreva uma resposta antes de enviar.";
       return;
     }
 
+    const res = jogo.responderTexto(txt);
+    if (!res) return;
+
     fase = "feedback";
-    aviso("");
+    resultado = res;
+    $("aviso").textContent = "";
     travarResposta(true);
     $("resposta").hidden = true;
 
-    // Eco do que o jogador disse
-    $("eco").textContent = "VOCÊ: " + txt;
+    $("eco").textContent = "Você: " + txt;
     $("eco").hidden = false;
 
-    // O Motor valida e pontua
-    const res = jogo.responderTexto(txt);
-    if (!res) return;
-    resultado = res;
-    renderPlacar();
+    renderConsciencia();
 
-    // Pontuação + categoria
-    const sinal = (n) => (n > 0 ? "+" + n : String(n));
-    $("feedback-meta").innerHTML = "";
+    // Categoria + variação da consciência
+    const meta = $("feedback-meta");
+    meta.innerHTML = "";
     const tag = document.createElement("span");
     tag.className = "tag";
-    tag.textContent = `[${res.rotulo}]`;
-    $("feedback-meta").append(
-      tag,
-      ` pontos ${sinal(res.deltaPontos)} | consciência ${sinal(res.deltaConsciencia)}`
-    );
+    tag.textContent = res.rotulo;
+    const delta = (res.delta > 0 ? "+" : "") + res.delta;
+    meta.append(tag, ` · consciência ${delta}`);
     $("feedback").hidden = false;
 
-    // Reação da criança digitada; depois avança sozinho (ou pelo botão)
-    $("btn-continuar").textContent = res.fim ? "VER RESULTADO >" : "CONTINUAR >";
+    $("btn-continuar").textContent = res.fim ? "Ver resultado" : "Continuar";
+
+    // Reação da criança digitada; depois o botão (e o avanço automático)
     digitar($("feedback-texto"), res.feedback, () => {
+      if (res.dica) {
+        $("feedback-dica").textContent = "Uma boa resposta seria: " + res.dica;
+        $("feedback-dica").hidden = false;
+      }
       $("btn-continuar").hidden = false;
-      timerAvanco = setTimeout(avancar, UI.MS_PAUSA_AVANCO);
+      if (UI.AUTO_AVANCO_MS > 0) timerAvanco = setTimeout(avancar, UI.AUTO_AVANCO_MS);
     });
   }
 
-  // ---------- Fluxo: avançar ----------
   function avancar() {
     if (fase !== "feedback" || !resultado) return;
     clearTimeout(timerAvanco);
@@ -172,62 +239,73 @@
     fase = "transicao";
 
     const aoSair = () => {
-      if (resultado.fim) {
-        mostrarFim();
-      } else if (jogo.avancar()) {
-        mostrarPergunta();
-      }
-      $("jogo").classList.remove("saindo");
+      if (resultado.fim) mostrarFim();
+      else if (jogo.avancar()) mostrarPergunta();
+      $("tela-jogo").classList.remove("saindo");
     };
 
     if (UI.INSTANTANEO) return aoSair();
-    $("jogo").classList.add("saindo");
+    $("tela-jogo").classList.add("saindo");
     setTimeout(aoSair, UI.MS_FADE);
   }
 
   function mostrarFim() {
     fase = "fim";
     const r = jogo.resultadoFinal();
-    const s = jogo.estado();
-    $("jogo").hidden = true;
-    $("fim").hidden = false;
-    $("fim-titulo").textContent = `> ${r.titulo}`;
+    $("fim-titulo").textContent = r.titulo;
     $("fim-texto").textContent = r.texto;
-    $("fim-stats").textContent =
-      `PONTOS: ${s.pontos} | CONSCIÊNCIA: ${s.consciencia}/${s.consciencia_max}`;
-  }
 
-  function iniciar() {
-    clearTimeout(timerAvanco);
-    cancelarDigitacao();
-    jogo = Motor.criarJogo();
-    $("fim").hidden = true;
-    $("jogo").hidden = false;
-    $("jogo").classList.remove("saindo");
-    mostrarPergunta();
+    const linhas = [
+      ["Consciência final", `${r.consciencia} (meta: ${r.meta})`],
+      ["Respostas sensatas", r.contagem.sensata],
+      ["Respostas zueiras", r.contagem.zueira],
+      ["Complexas demais", r.contagem.tecnica],
+      ["Confusas", r.contagem.indefinida]
+    ];
+    const box = $("fim-stats");
+    box.innerHTML = "";
+    linhas.forEach(([rotulo, valor]) => {
+      const linha = document.createElement("div");
+      linha.className = "linha";
+      const a = document.createElement("span");
+      a.textContent = rotulo;
+      const b = document.createElement("strong");
+      b.textContent = valor;
+      linha.append(a, b);
+      box.appendChild(linha);
+    });
+
+    mostrarTela("fim");
   }
 
   // ---------- Eventos ----------
-  $("btn-enviar").addEventListener("click", enviar);
+  // Menu e onboarding
+  $("btn-sim").addEventListener("click", () => mostrarTela("regras"));
+  $("btn-nao").addEventListener("click", () => { $("msg-nao").hidden = false; });
+  $("btn-ok").addEventListener("click", () => { montarSetup(); mostrarTela("setup"); });
 
-  // Enter envia; Shift+Enter quebra linha
+  // Setup
+  $("btn-iniciar").addEventListener("click", iniciarPartida);
+  $("btn-voltar-setup").addEventListener("click", () => mostrarTela("menu"));
+
+  // Jogo
+  $("btn-enviar").addEventListener("click", enviar);
   $("texto-livre").addEventListener("keydown", (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey) {   // Enter envia; Shift+Enter quebra linha
       e.preventDefault();
       enviar();
     }
   });
-
-  // Tocar na caixa de diálogo pula a digitação
-  $("dialogo").addEventListener("click", () => {
-    if (digitacao) digitacao.pular();
-  });
-  $("feedback").addEventListener("click", () => {
-    if (digitacao) digitacao.pular();
-  });
-
+  $("dialogo").addEventListener("click", () => { if (digitacao) digitacao.pular(); });
+  $("feedback").addEventListener("click", () => { if (digitacao) digitacao.pular(); });
   $("btn-continuar").addEventListener("click", avancar);
-  $("btn-reiniciar").addEventListener("click", iniciar);
 
-  iniciar();
+  // Resultado
+  $("btn-repetir").addEventListener("click", iniciarPartida);
+  $("btn-config").addEventListener("click", () => { montarSetup(); mostrarTela("setup"); });
+  $("btn-menu").addEventListener("click", () => { $("msg-nao").hidden = true; mostrarTela("menu"); });
+
+  // Início
+  montarSetup();
+  mostrarTela("menu");
 })();
