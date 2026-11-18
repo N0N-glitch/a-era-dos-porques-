@@ -4,67 +4,139 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>A Era dos Porquês</title>
+
+  <!-- Fontes opcionais (precisam de internet). Sem elas, o jogo usa Georgia e a fonte do sistema. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <main id="cena">
-    <h1>&gt; A_ERA_DOS_PORQUÊS</h1>
+  <div class="cena">
+    <main>
 
-    <section id="placar">
-      <div>PONTOS: <span id="pontos">0</span></div>
-      <div id="progresso"></div>
-      <div class="medidor-wrap">
-        <span>CONSCIÊNCIA: <span id="consciencia-valor">50</span>/100</span>
-        <div class="medidor"><div id="medidor-barra"></div></div>
-      </div>
-    </section>
+      <!-- ============ MENU INICIAL + "ESTÁ PRONTO?" ============ -->
+      <section id="tela-menu" class="tela">
+        <p class="sobretitulo">um jogo aconchegante sobre ouvir e responder</p>
+        <h1>A Era dos Porquês</h1>
+        <p class="lead">O dia terminou, a luz da sala está baixinha, e as perguntas mais curiosas do mundo começam a aparecer.</p>
 
-    <section id="jogo">
-      <!--
-        ============================================================
-        FASE VISUAL FUTURA
-        Este bloco é só um placeholder de texto. Na etapa de arte,
-        o personagem (criança) e os cenários entram aqui, junto com
-        o acabamento visual refinado. A lógica não depende dele.
-        ============================================================
-      -->
-      <div id="personagem" class="placeholder"></div>
+        <div class="cartao">
+          <p class="pergunta-pronto">Você está pronto para responder às perguntas?</p>
+          <div class="linha-botoes">
+            <button id="btn-sim" type="button" class="btn btn-primario">Sim, estou pronto</button>
+            <button id="btn-nao" type="button" class="btn btn-suave">Ainda não</button>
+          </div>
+          <p id="msg-nao" class="nota" hidden>Sem pressa. A chaleira ainda está no fogo. Volte quando quiser.</p>
+        </div>
+      </section>
 
-      <!-- Caixa de diálogo: a pergunta da criança aparece digitada -->
-      <div id="dialogo" aria-live="polite">
-        <div class="falante">CRIANÇA:</div>
-        <p id="dialogo-texto" class="fala"></p>
-        <div class="dica" id="dica-pular">(toque na caixa para pular a digitação)</div>
-      </div>
+      <!-- ============ REGRAS / ONBOARDING ============ -->
+      <section id="tela-regras" class="tela" hidden>
+        <h2>Como funciona</h2>
+        <div class="cartao">
+          <ul class="regras">
+            <li>A criança faz <strong>uma pergunta por vez</strong>. Cada rodada tem <strong><span id="regra-qtd">5</span> perguntas</strong> sorteadas.</li>
+            <li>Digite sua resposta <strong>com suas próprias palavras</strong> e toque em Enviar.</li>
+            <li>Respostas <strong>sensatas e lúdicas</strong>, na medida da idade da criança, aumentam a consciência.</li>
+            <li><strong>Piadas e absurdos</strong> diminuem um pouco. <strong>Explicações complicadas demais</strong> diminuem mais ainda.</li>
+            <li>A consciência começa em <strong>zero</strong>. Cinza: neutra. Amarelo: positiva, mas ainda insuficiente. Verde: suficiente para passar. Vermelho: abaixo de zero.</li>
+            <li>No <strong>Hard Mode (Última Chance)</strong>, se a consciência cair abaixo de zero, a rodada termina na hora.</li>
+          </ul>
+          <button id="btn-ok" type="button" class="btn btn-primario">OK</button>
+        </div>
+      </section>
 
-      <!-- Eco da resposta do jogador -->
-      <div id="eco" hidden></div>
+      <!-- ============ SETUP DA PARTIDA ============ -->
+      <section id="tela-setup" class="tela" hidden>
+        <h2>Preparando a noite</h2>
+        <div class="cartao">
+          <fieldset>
+            <legend>Idade da criança</legend>
+            <div id="opcoes-idade" class="grade-opcoes"></div>
+          </fieldset>
 
-      <!-- Reação da criança + pontuação -->
-      <div id="feedback" hidden>
-        <div id="feedback-meta"></div>
-        <div class="falante">CRIANÇA:</div>
-        <p id="feedback-texto" class="fala"></p>
-      </div>
+          <fieldset>
+            <legend>Dificuldade</legend>
+            <div id="opcoes-dif" class="grade-opcoes grade-dif"></div>
+          </fieldset>
 
-      <!-- Resposta livre do jogador -->
-      <div id="resposta">
-        <label for="texto-livre">&gt; Sua resposta:</label>
-        <textarea id="texto-livre" rows="3" placeholder="explique para a criança..."></textarea>
-        <div id="aviso" role="status"></div>
-        <button id="btn-enviar" type="button">ENVIAR</button>
-      </div>
+          <p class="fixo">Perguntas por rodada: <strong id="qtd-perguntas">5</strong></p>
 
-      <button id="btn-continuar" type="button" hidden>CONTINUAR &gt;</button>
-    </section>
+          <div class="linha-botoes">
+            <button id="btn-iniciar" type="button" class="btn btn-primario">Começar a conversa</button>
+            <button id="btn-voltar-setup" type="button" class="btn btn-suave">Voltar</button>
+          </div>
+        </div>
+      </section>
 
-    <section id="fim" hidden>
-      <h2 id="fim-titulo"></h2>
-      <p id="fim-texto"></p>
-      <p id="fim-stats"></p>
-      <button id="btn-reiniciar" type="button">JOGAR NOVAMENTE</button>
-    </section>
-  </main>
+      <!-- ============ JOGO ============ -->
+      <section id="tela-jogo" class="tela" hidden>
+        <header class="hud">
+          <div class="hud-info">
+            <span id="hud-progresso"></span>
+            <span id="hud-config"></span>
+          </div>
+
+          <div id="painel-consciencia" class="painel estado-neutro" aria-live="polite">
+            <div class="painel-topo">
+              <span>Consciência</span>
+              <strong id="consciencia-valor">0</strong>
+            </div>
+            <div class="barra"><div id="consciencia-barra"></div></div>
+            <div class="painel-rodape">
+              <span id="consciencia-rotulo"></span>
+              <span>Meta: <strong id="consciencia-meta"></strong></span>
+            </div>
+          </div>
+        </header>
+
+        <!-- FASE VISUAL FUTURA: o avatar abaixo é só um placeholder.
+             A arte dos personagens entra aqui em uma etapa posterior. -->
+        <div class="dialogo-wrap">
+          <div class="avatar" aria-hidden="true">🧒</div>
+          <div id="dialogo" class="balao">
+            <div class="falante">A criança pergunta</div>
+            <p id="dialogo-texto" class="fala"></p>
+            <div id="dica-pular" class="dica">toque na caixa para pular a digitação</div>
+          </div>
+        </div>
+
+        <div id="eco" class="eco" hidden></div>
+
+        <div id="feedback" class="cartao feedback" hidden>
+          <div id="feedback-meta"></div>
+          <p id="feedback-texto" class="fala"></p>
+          <p id="feedback-dica" class="sugestao" hidden></p>
+        </div>
+
+        <div id="resposta" class="resposta">
+          <label for="texto-livre">Sua resposta</label>
+          <textarea id="texto-livre" rows="3" placeholder="Explique para a criança do seu jeito..."></textarea>
+          <div id="aviso" role="status"></div>
+          <button id="btn-enviar" type="button" class="btn btn-primario">Enviar</button>
+        </div>
+
+        <button id="btn-continuar" type="button" class="btn btn-primario" hidden>Continuar</button>
+      </section>
+
+      <!-- ============ RESULTADO ============ -->
+      <section id="tela-fim" class="tela" hidden>
+        <h2 id="fim-titulo"></h2>
+        <div class="cartao">
+          <p id="fim-texto" class="lead-fim"></p>
+          <div id="fim-stats" class="stats"></div>
+          <div class="linha-botoes">
+            <button id="btn-repetir" type="button" class="btn btn-primario">Jogar de novo</button>
+            <button id="btn-config" type="button" class="btn btn-suave">Mudar configurações</button>
+            <button id="btn-menu" type="button" class="btn btn-suave">Menu inicial</button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
 
   <script src="dados.js"></script>
   <script src="motor.js"></script>
