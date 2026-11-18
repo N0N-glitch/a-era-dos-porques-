@@ -1,91 +1,237 @@
 /* ============================================================
-   CSS MINIMALISTA DE TESTE (identidade Matrix: preto + verde).
-   O acabamento visual refinado e as imagens dos personagens
-   serão feitos em uma etapa futura. Aqui só o necessário para
-   a lógica e a interação funcionarem.
+   A ERA DOS PORQUÊS: identidade visual indie cozy.
+   Tons quentes de crepúsculo, sala de estar à luz de abajur.
+   Para mudar o clima do jogo, mexa só nas variáveis de :root.
    ============================================================ */
+
+:root {
+  --bg-topo: #241a2b;
+  --bg-meio: #3d2733;
+  --bg-base: #6b3a3a;
+
+  --papel: rgba(255, 240, 222, 0.08);
+  --papel-forte: rgba(255, 240, 222, 0.14);
+  --borda: rgba(255, 214, 170, 0.22);
+
+  --texto: #fbefdc;
+  --suave: #d4b99c;
+  --ambar: #f2b266;
+  --ambar-escuro: #3a2218;
+
+  /* Estados da consciência */
+  --cinza: #a39a9f;
+  --amarelo: #f3c54e;
+  --verde: #8fc17e;
+  --vermelho: #e4635c;
+
+  --serif: "Fraunces", Georgia, "Times New Roman", serif;
+  --sans: "Nunito", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --raio: 18px;
+}
 
 * { box-sizing: border-box; }
 
 body {
   margin: 0;
-  background: #000;
-  color: #00ff41;
-  font-family: "Courier New", monospace;
-  line-height: 1.5;
+  color: var(--texto);
+  font-family: var(--sans);
+  font-size: 1.05rem;
+  line-height: 1.6;
+  background: var(--bg-topo);
 }
 
-main { max-width: 720px; margin: 0 auto; padding: 16px; }
-h1, h2 { font-size: 1.2rem; margin: 0 0 12px; }
+/* Cenário: crepúsculo + brilho de abajur */
+.cena {
+  min-height: 100vh;
+  background: linear-gradient(180deg, var(--bg-topo) 0%, var(--bg-meio) 50%, var(--bg-base) 100%);
+  position: relative;
+}
+.cena::before {
+  content: "";
+  position: fixed;
+  top: -120px;
+  right: -120px;
+  width: 460px;
+  height: 460px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 190, 120, 0.3), transparent 65%);
+  pointer-events: none;
+  animation: respirar 6s ease-in-out infinite;
+}
+@keyframes respirar { 50% { opacity: 0.6; } }
 
-/* Transição suave entre perguntas */
-#jogo { transition: opacity .25s; }
-#jogo.saindo { opacity: 0; }
-
-/* Placar */
-#placar { border: 1px solid #00ff41; padding: 12px; margin-bottom: 16px; }
-.medidor-wrap { margin-top: 8px; }
-.medidor { border: 1px solid #00ff41; height: 16px; margin-top: 4px; }
-#medidor-barra { height: 100%; width: 50%; background: #00ff41; transition: width .4s; }
-
-/* Placeholder do personagem (arte futura) */
-.placeholder {
-  border: 1px dashed #008f11;
-  color: #008f11;
-  padding: 24px 12px;
-  text-align: center;
-  margin-bottom: 16px;
+main {
+  position: relative;
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 28px 18px 48px;
 }
 
-/* Caixa de diálogo */
-#dialogo {
-  border: 1px solid #00ff41;
-  padding: 12px;
+h1, h2 { font-family: var(--serif); margin: 0 0 12px; line-height: 1.2; }
+h1 { font-size: clamp(2.1rem, 8vw, 3rem); }
+h2 { font-size: 1.7rem; }
+
+.sobretitulo { color: var(--ambar); font-size: 0.9rem; letter-spacing: 0.04em; margin: 8px 0; }
+.lead { color: var(--suave); margin: 0 0 24px; }
+.lead-fim { margin-top: 0; }
+.nota { color: var(--suave); margin: 14px 0 0; }
+
+.tela { animation: aparecer 0.45s ease; }
+.tela[hidden] { display: none; }
+@keyframes aparecer { from { opacity: 0; transform: translateY(8px); } }
+
+/* ---------- Cartões ---------- */
+.cartao {
+  background: var(--papel);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  padding: 20px;
   margin-bottom: 16px;
-  min-height: 110px;
+}
+.pergunta-pronto { font-family: var(--serif); font-size: 1.35rem; margin: 0 0 16px; }
+
+.regras { margin: 0 0 20px; padding-left: 1.2rem; }
+.regras li { margin-bottom: 10px; }
+
+/* ---------- Botões ---------- */
+.linha-botoes { display: flex; flex-wrap: wrap; gap: 10px; }
+
+.btn {
+  font: inherit;
+  font-weight: 700;
+  min-height: 46px;
+  padding: 0.65rem 1.3rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: transform 0.15s, filter 0.15s, background 0.15s;
+}
+.btn-primario { background: var(--ambar); color: var(--ambar-escuro); }
+.btn-suave { background: transparent; color: var(--texto); border-color: var(--borda); }
+.btn:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(1.08); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn:focus-visible, textarea:focus-visible { outline: 3px solid var(--ambar); outline-offset: 2px; }
+#btn-continuar { width: 100%; }
+
+/* ---------- Setup ---------- */
+fieldset { border: 0; padding: 0; margin: 0 0 20px; }
+legend { font-family: var(--serif); font-size: 1.15rem; margin-bottom: 10px; padding: 0; }
+
+.grade-opcoes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.grade-dif { grid-template-columns: 1fr 1fr; }
+
+.opcao { position: relative; display: block; cursor: pointer; }
+.opcao input { position: absolute; opacity: 0; inset: 0; }
+.opcao-corpo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  height: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--borda);
+  border-radius: 14px;
+  background: var(--papel);
+  transition: border-color 0.15s, background 0.15s;
+}
+.opcao-corpo small { color: var(--suave); font-size: 0.82rem; line-height: 1.35; }
+.opcao input:checked + .opcao-corpo { border-color: var(--ambar); background: var(--papel-forte); box-shadow: 0 0 0 1px var(--ambar); }
+.opcao input:focus-visible + .opcao-corpo { outline: 3px solid var(--ambar); outline-offset: 2px; }
+
+.fixo { color: var(--suave); margin: 0 0 18px; }
+
+/* ---------- HUD e painel de consciência ---------- */
+.hud { margin-bottom: 18px; }
+.hud-info { display: flex; justify-content: space-between; gap: 8px; color: var(--suave); font-size: 0.9rem; margin-bottom: 8px; }
+
+.painel {
+  --estado: var(--cinza);
+  background: var(--papel);
+  border: 1px solid var(--borda);
+  border-left: 6px solid var(--estado);
+  border-radius: 14px;
+  padding: 12px 16px;
+  transition: border-color 0.4s;
+}
+.estado-neutro { --estado: var(--cinza); }
+.estado-alerta { --estado: var(--amarelo); }
+.estado-ok     { --estado: var(--verde); }
+.estado-perigo { --estado: var(--vermelho); }
+
+.painel-topo { display: flex; justify-content: space-between; align-items: baseline; font-weight: 700; }
+.painel-topo strong { font-family: var(--serif); font-size: 1.7rem; color: var(--estado); transition: color 0.4s; }
+.barra { height: 12px; border-radius: 999px; background: rgba(255, 255, 255, 0.1); overflow: hidden; margin: 6px 0; }
+#consciencia-barra { height: 100%; width: 0; background: var(--estado); border-radius: 999px; transition: width 0.5s ease, background 0.4s; }
+.painel-rodape { display: flex; justify-content: space-between; color: var(--suave); font-size: 0.85rem; }
+
+/* ---------- Diálogo ---------- */
+.dialogo-wrap { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 16px; }
+.avatar {
+  flex: none;
+  width: 56px;
+  height: 56px;
+  display: grid;
+  place-items: center;
+  font-size: 1.9rem;
+  border-radius: 50%;
+  background: var(--papel-forte);
+  border: 1px solid var(--borda);
+}
+.balao {
+  flex: 1;
+  min-height: 112px;
+  padding: 14px 18px;
+  background: var(--papel-forte);
+  border: 1px solid var(--borda);
+  border-radius: 6px var(--raio) var(--raio) var(--raio);
   cursor: pointer;
 }
-.falante { color: #008f11; font-weight: bold; }
-.fala { margin: 4px 0 0; font-size: 1.15rem; min-height: 1.5em; white-space: pre-wrap; }
-.dica { color: #008f11; font-size: .8rem; margin-top: 8px; }
+.falante { color: var(--ambar); font-size: 0.8rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+.fala { font-family: var(--serif); font-size: 1.25rem; margin: 4px 0 0; min-height: 1.6em; }
+.dica { color: var(--suave); font-size: 0.78rem; margin-top: 8px; }
 
-/* Cursor piscando durante a digitação */
 .fala.digitando::after {
-  content: "█";
+  content: "▍";
+  color: var(--ambar);
+  margin-left: 2px;
   animation: piscar 1s steps(1) infinite;
 }
 @keyframes piscar { 50% { opacity: 0; } }
 
-/* Eco da resposta do jogador */
-#eco {
-  border-left: 3px solid #00ff41;
-  padding: 4px 12px;
-  margin-bottom: 16px;
-  white-space: pre-wrap;
+.eco { border-left: 3px solid var(--ambar); padding: 6px 14px; margin-bottom: 16px; color: var(--suave); white-space: pre-wrap; }
+
+/* ---------- Feedback ---------- */
+.feedback { cursor: pointer; }
+#feedback-meta { color: var(--suave); font-size: 0.9rem; margin-bottom: 6px; }
+#feedback-meta .tag { font-weight: 700; color: var(--texto); }
+.sugestao { margin: 12px 0 0; padding-top: 12px; border-top: 1px dashed var(--borda); color: var(--suave); font-size: 0.95rem; }
+
+/* ---------- Resposta ---------- */
+.resposta { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+.resposta[hidden] { display: none; }
+.resposta label { font-weight: 700; color: var(--suave); }
+textarea {
+  width: 100%;
+  resize: vertical;
+  padding: 12px 14px;
+  font: inherit;
+  color: var(--texto);
+  background: var(--papel);
+  border: 1px solid var(--borda);
+  border-radius: 14px;
 }
+textarea::placeholder { color: rgba(212, 185, 156, 0.6); }
+textarea:disabled { opacity: 0.5; }
+#aviso { min-height: 1.3em; color: var(--ambar); font-size: 0.9rem; }
 
-/* Feedback */
-#feedback { border: 1px solid #00ff41; padding: 12px; margin-bottom: 16px; }
-#feedback-meta { color: #008f11; margin-bottom: 8px; }
-#feedback-meta .tag { color: #00ff41; font-weight: bold; }
+/* ---------- Resultado ---------- */
+.stats { display: grid; gap: 6px; margin: 14px 0 20px; color: var(--suave); }
+.stats .linha { display: flex; justify-content: space-between; border-bottom: 1px dashed var(--borda); padding-bottom: 4px; }
 
-/* Campo de resposta */
-#resposta { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
-#resposta[hidden] { display: none; }
-#aviso { color: #008f11; min-height: 1.2em; font-size: .9rem; }
-
-button, textarea {
-  background: #000;
-  color: #00ff41;
-  border: 1px solid #00ff41;
-  font-family: inherit;
-  font-size: 1rem;
+/* ---------- Telas pequenas / movimento reduzido ---------- */
+@media (max-width: 480px) {
+  .grade-dif { grid-template-columns: 1fr; }
+  .grade-opcoes { gap: 8px; }
 }
-textarea { padding: 8px; width: 100%; resize: vertical; }
-button { padding: 10px 12px; cursor: pointer; text-align: center; }
-button:hover:not(:disabled) { background: #00ff41; color: #000; }
-button:disabled, textarea:disabled { opacity: .4; cursor: not-allowed; }
-
-#btn-continuar { width: 100%; }
-
-#fim { border: 1px solid #00ff41; padding: 16px; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
